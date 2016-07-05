@@ -1,0 +1,103 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - evaluate_amazon.run file
+
+printf "==========================\n";
+printf "   START! START! START!\n"; 
+printf "==========================\n";
+
+reset;
+reset; #ciu is mel che uan, maxibon dixit. 
+
+# Solver options 
+#option randseed 0; <-- la randseed a 0 fa la random ad ogni esecuzione. 
+option randseed 1;
+
+option eexit -10000;
+
+# KNITRO
+#option solver '/usr/optimization/knitro-8.0.0-z/knitroampl/knitroampl';
+#option knitro_options 'maxit=100';
+#option knitro_options 'debug=0';
+#option knitro_options 'outlev=0';
+###########################################
+#option knitro_options 'par_numthreads=8'; 
+#option presolve 0; 
+#option knitro_options 'opttol=1e-1';
+#option knitro_options 'feastol=1e-2';
+#option knitro_options 'outdir=./logs/';
+#option outdir "./logs/"; 
+
+# CPLEX
+option solver '/usr/optimization/CPLEX_Studio_Preview126/cplex/bin/x86-64_linux/cplexamp'; 
+#option log_file 'logs.log';
+#option log_data 0;
+#option log_model 0;
+option cplex_options 'lpdisplay=0';
+#option cplex_options 'lpiterlim=100';
+#option cplex_options 'sensitivity';
+option solver_msg 0; 
+option presolve_eps  1e-10;
+option presolve_warnings 100;
+
+# Static definitions
+include static_definition.run;
+
+# Model
+model model.mod;
+model potential.mod;
+
+# Sub problems
+include define_sub_problems.run;
+#include define_sub_problems_120k.run; 
+
+# Data
+#data ./data/first_model.dat;
+data ./data/model-3-100-100-alliaas.dat;
+#data ./data/model-3-4-12-shuffle.dat;
+#data ./data/model-10-20-120-shuffle.dat;
+#data ./data/model-10-i-100-j-1000-k-3-ixj-shuffle.dat 
+#data ./data/model-10-i-100-j-10000-k-1-ixj-shuffle.dat 
+#data ./data/model-10-i-100-j-10000-k-2-ixj-shuffle.dat 
+#data ./data/model-10-i-100-j-10000-k-3-ixj-shuffle.dat 
+
+# Hours
+#data ./data/1hour.dat;
+data ./data/24hours.dat;
+
+# Lambda
+#data ./timeseries/timeseries-12-k-1-h.dat
+data ./timeseries_shift/timeseries-100-k-24-h-shift.dat
+#data ./timeseries/timeseries-12-k-24-h.dat # tracce Ferrari
+#data ./timeseries_shift/timeseries-12-k-24-h-shift.dat 
+#data ./timeseries_shift/timeseries-1000-k-24-h-shift.dat 
+#data ./timeseries_shift/timeseries-120-k-24-h-shift.dat
+#data ./data/model-Lambda.dat; # arrival 
+data ./data/model-lambda.dat; # SLA
+
+
+# Active constraints check
+#include active_check.run; --- disattivato 
+
+#Algo
+#include algorithm2.run;
+include algorithm2.run;
+#include algorithm2_mauro_analisiVM.run;
+
+# Checks
+#include checks.run;
+#include checks_amazon.run;
+include check_infeasible.run;
+
+# Display 
+display N[1], R[1,1], card(A);
+#display o, r;
+#display TotVMatI, TotOatI, TotRatI;
+#display TotVMatI, TotVM, TotO, TotR;
+#display C;
+#display X_max.slack;
+#display potential;
+
+# End message
+printf "\n========================================\n";
+printf "   Finished. Results at /logs/ folder   "; 
+printf "\n========================================\n";

@@ -1,0 +1,48 @@
+#!/bin/bash
+#runAmpl with parameter
+
+let START=$(date +"%s")
+
+###
+echo "include $1" | ./ampl_console
+###
+
+let secs=$(date +"%s")-START
+let mins=secs/60
+let secs=secs-mins*60
+let hours=mins/60
+let mins=mins-hours*60
+let days=hours/24
+let hours=hours-days*24
+
+echo ""
+echo -ne "The simulation took"
+if [ "$days" -gt 0 ]
+	then echo -ne " $days days"
+fi
+if [ "$hours" -gt 0 ]
+	then echo -ne " $hours hours"
+fi
+if [ "$mins" -gt 0 ]
+	then echo -ne " $mins mins"
+fi
+if [ "$secs" -gt 0 ]
+	then echo -ne " $secs secs"
+fi
+echo .
+
+echo "$days D $hours h $mins mins $secs secs" > ./matlab/time.txt
+
+hoursinsecs=0
+minsinsecs=0
+totsecs=0
+
+hoursinsecs=`expr $hours \* 3600`
+minsinsecs=`expr $mins \* 60`
+totsecs=`expr $totsecs + $hoursinsecs`
+totsecs=`expr $totsecs + $minsinsecs`
+totsecs=`expr $totsecs + $secs`
+
+echo "$totsecs secs" >> ./matlab/time.txt
+
+echo "time.txt saved in ./matlab/"

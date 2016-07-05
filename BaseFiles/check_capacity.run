@@ -1,0 +1,18 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - check_capacity.run file
+
+for {i in I}{
+	for{j in Si[i]}{
+	
+		let capacity[i,t] := ( 
+			sum{k in Aj[j]} ( Lambda[k,t] / mu[k,i] ) 
+			/
+			N[i]
+		);
+	
+		let capacityVM[i,t] := TotVMatI[i,t] / N[i];
+	
+	}
+}
+
+let capacity_avg_VM[t]:=sum{i in I} capacityVM[i,t] / card(I);

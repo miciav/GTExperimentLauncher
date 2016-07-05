@@ -1,0 +1,28 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - tot_vm_i.run file
+
+
+# t in T disattivato perchè sono già dentro un ciclo T
+#for {t in T}{
+
+	for {i in I}
+	{
+		let TotVMatI[i,t]:= sum{j in S, k in Aj[j]} (r[k,i] + d[k,i] + s[k,i]);
+		let TotRatI[i,t]:= sum{j in S, k in Aj[j]} (r[k,i]);
+		let TotDatI[i,t]:= sum{j in S, k in Aj[j]} (d[k,i]);
+		let TotSatI[i,t]:= sum{j in S, k in Aj[j]} (s[k,i]);
+		
+	}
+	
+	let TotVM[t]:= sum{i in I} (TotVMatI[i,t]);
+	
+
+	#display TotVMatI, TotRatI, TotDatI, TotSatI;
+	#display TotVMatI, TotRatI, TotDatI, TotSatI > "./logs/logs_amazon_totvm.out";
+	
+	#display TotVMatI;
+	#display TotVM;
+	
+	#display TotVMatI > "./logs/logs_amazon_totvm.out";
+	#display TotVM > "./logs/logs_amazon_totvm.out";
+#}

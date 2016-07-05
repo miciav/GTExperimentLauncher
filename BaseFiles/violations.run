@@ -1,0 +1,24 @@
+for {j in S}
+	for {k in Aj[j]}
+		for {i in Ij[j]}
+			let x[k,i]:= (mu[k,i]-1/(overlineR[k] - D[k,i]))*(r[k,i]+d[k,i]+s[k,i]);
+
+#rm trafficfile.txt;
+printf "T\t=\n",t >>./logs/resultValues.txt;
+for {j in S}
+	for {k in Aj[j]}{
+			printf "overlineR[%d]\t=\t%f\n", k, overlineR[k] >>./logs/resultValues.txt;
+		}
+
+for {j in S}
+	for {k in Aj[j]}
+		for {i in Ij[j]}{
+			printf "mu[%d,%d]\t=\t%f\t", k, i, mu[k,i] >>./logs/resultValues.txt;
+			printf "x[%d,%d]\t=\t%f\t", k, i, x[k,i] >>./logs/resultValues.txt;
+			printf "D[%d,%d]\t=\t%f\t", k, i, D[k,i] >>./logs/resultValues.txt;
+			printf "r[%d,%d]\t=\t%f\t", k, i, r[k,i] >>./logs/resultValues.txt;
+			printf "d[%d,%d]\t=\t%f\t", k, i, d[k,i] >>./logs/resultValues.txt;
+			printf "s[%d,%d]\t=\t%f\t", k, i, s[k,i] >>./logs/resultValues.txt;
+		}
+
+printf "\n";

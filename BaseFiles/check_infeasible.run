@@ -1,0 +1,13 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - check_infeasbile.run file
+
+# Infeasible check
+#if match (solve_message, "infeasible") > 0 
+if ((match (solve_message, "no feasible") > 0)|| (match (solve_message, "infeasible") > 0))
+then {
+	printf "\n##############################\n";
+	printf "### INFEASIBLE! check logs ###\n";
+	printf "##############################\n";
+	#break;
+	#printf "Infeasible at t=%d\n", t > "./logs/logs_infeasible.out";
+}

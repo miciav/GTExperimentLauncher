@@ -1,0 +1,30 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - model-Lambda_sin.run file
+
+#### QUESTO MODELLA LO SLA - cioè quanta % di Lambda devo garantire. 
+
+# this script implements SLA requirements in terms of incoming workload to serve
+
+#in questo momento è 0.8
+for {k in A}{
+	for {t in T}{
+		let lambda[k,t]:= 0.8 * Lambda[k,t];
+	}
+}
+
+#generazione di overlineR in funzione di D e mu. 
+#this section generates overlineR as a function of D and mu
+
+
+for {i in I}{
+	for {k in A}{
+		if ( Dmax[k] < D[k,i] )
+		then let Dmax[k]:= D[k,i];
+	}
+}
+
+for {i in I}{
+	for {k in A}{
+		let overlineR[k] := (10/mu[k,i]) + Dmax[k];
+	}
+}

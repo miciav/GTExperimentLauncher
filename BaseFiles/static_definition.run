@@ -1,0 +1,192 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - static_definition.run file
+
+##################################################################
+# --Sets
+
+set T; # set of hours
+
+set S; # set of SaaS providers
+
+set S2; # set of SaaS providers reordered, check poa.run for details.
+
+set A;	# set of application of all the SaaS provider
+
+set Aj{S} within A; # 
+
+set I;	# set of IaaS providers
+
+set Ij {S} within I; #
+
+set Si {i in I} = {j in S: i in Ij[j]}; #
+
+##################################################################
+# --System Parameters
+
+#param Lambda{k in A, t in T}:=Uniform(3000,5000); # prediction of the arrival rate for application k
+param Lambda{k in A, t in T}; #uso questa se uso model-Lambda_sin.dat;
+param LambdaCurrent{k in A};
+
+param lambda{k in A, t in T};
+param lambdaCurrent{k in A};
+
+#param mu{k in A, i in I}:=Uniform(5,10); # maximum service rate for executing class k application at IaaS site i
+#param mu{k in A, i in I}:=11;
+
+#param mu{k in A, i in I}:=Uniform(20,80); #test small
+param mu{k in A, i in I}:=Uniform(200,400); #test 1k e 10k
+
+#param D{k in A, i in I}:=Uniform(0.01,0.5); # 
+param D{k in A, i in I}:=Uniform(0.001,0.05); #
+
+param Dmax{k in A} default 0; 
+
+#param overlineR{k in A}:=Uniform(5,10); # application k average response time threshold
+#param overlineR{k in A}:=2;
+#param overlineR{k in A}:=Uniform(1,2);
+
+param overlineR{k in A}; #definita come funzione di mu e D in model-lambda.dat
+
+#param nu{k in A}:=1;
+#param nu{k in A}:=0.1;
+#param nu{k in A}:=0.045;
+#param nu{k in A}:=0.0000045; # k=120
+param nu{k in A}:=0.000045;
+
+param rho{i in I, t in T}:= 4.8; # Large-VM reserved medium-usage price @US-east
+param rhoCurrent{i in I}; #
+
+param delta{i in I, t in T}:= 13.0; # on-demand prices (greater then reserved prices)
+param deltaCurrent{i in I}; # on-demand current price
+
+param sigmamax{j in S, i in I, t in T}:=Uniform(2.6,4.7); # on-spot con upperbound le reserved
+#param sigmamax{j in S, i in I, t in T}:=Uniform(2.6,13.0); # on-spot con upperbound le on-demand
+param sigmamaxCurrent{j in S, i in I};
+
+param eta{j in S}:=0.25;
+
+#param N{i in I} default Uniform(100, 200); # maximum number of VM that can be executed at the IaaS site i
+
+param N{i in I}:= 70; # 2.2
+
+param R{j in S, i in I}:=0.5*N[i]/card(Si[i]);
+#param R{j in S, i in I}:=1; #test small
+
+#param Time:=3600; # control time horizon
+param Time:=3600;
+
+#param omegasLog{j in S, t in T};
+
+##################################################################
+
+#active_check.run params
+param SumI{i in I}; 
+
+##################################################################
+
+# init.run param
+param resid{i in I};
+param alloc{i in I};
+param classesAtI{i in I};
+
+##################################################################
+
+# poa.run param
+param potentialBestReplyLog{t in T}; # Best Reply
+param potentialSocialOptimaLog{t in T}; #Social Optima
+param PoA{t in T}; #Price of Anarchy
+param IWC_br{j in S, t in T}; #Individual worst case best reply solution
+param IWC_so{j in S, t in T}; #Individual worst case social optima solution
+param IWC{j in S, t in T}; #Individual worst case ratio
+param IWCmax{j in S} default 0; #IWC nel tempo.
+param BRmax{j in S} default 0; #BR nel tempo.  
+param TotVM{t in T}; #total number of VM at time t
+param TotVMatI{i in I, t in T}; # total number of VM at i at time t
+param TotS{t in T};
+param TotR{t in T};
+param TotD{t in T};
+param TotSatI{i in I, t in T};
+param TotRatI{i in I, t in T};
+param TotDatI{i in I, t in T};
+
+##################################################################
+
+# checks.run param
+param VMprice{j in S, t in T}; #VM hour price for each SaaS provider
+param C{j in S, i in I, t in T}; #wip
+
+##################################################################
+
+# amazon.run param
+#param x{k in A, i in I}; # Lambda_k / card (Ij[j])
+param sum_desidered{k in A};
+param sum_sigmamax{i in I};
+param desidered_r{k in A, i in I};
+param reallocated_r{k in A, i in I}; 
+param desidered_s{k in A, i in I};
+param available_s{i in I};
+param residual{k in A, i in I};
+#param U:=0.6; #usage 60%
+param U:=0.6; # usage xx0%
+#param U:=0.99; # usage 100%
+param needs_r{k in A};
+param needs_s{i in I};
+param needs_N{i in I};
+param omegajInit{j in S, t in T};
+param potentialInit{t in T};
+param omegasHeu{j in S, t in T};
+param potentialHeu{t in T};
+param potentialBR{t in T};
+param potentialSO{t in T};
+param PoA_init_so{t in T};
+param PoA_heu_so{t in T};
+param PoA_br_so{t in T};
+
+##################################################################
+
+# algorithm2.run param
+param epsilon:=0.1; #0.01
+param M{i in I} default 0; #vm usate da TUTTE le app. 
+param N_alg2{j in S, i in I} default 0;
+param potentialStep1{t in T};
+param potentialStep2{t in T};
+param potentialStep3_S{t in T};
+param potentialStep3_S2{t in T};
+param PoA_Alg2_step1_so{t in T};
+param PoA_Alg2_step2_so{t in T};
+param PoA_Alg2_step3_S_so{t in T};
+param PoA_Alg2_step3_S2_so{t in T};
+param count{j in S};
+param count2{j in S};
+param saved{j in S} default 0;
+param counter default 0;
+param flag{j in S, i in I} default 0;
+param IWCmax_avg default 0;
+param BRmax_avg default 0;
+param PoA_avg default 0;
+param iteration default 0;
+
+##################################################################
+
+# threshold_v1.run param
+param N_threshold_v1{j in S, i in I} default 0;
+param PoA_threshold_v1_step1_so{t in T};
+param PoA_threshold_v1_step2_so{t in T};
+param PoA_threshold_v1_step3_S_so{t in T};
+param PoA_threshold_v1_step3_S2_so{t in T};
+param previous_r{j in S, k in A, i in I};
+param previous_d{j in S, k in A, i in I};
+param previous_s{j in S, k in A, i in I};
+param iterations{t in T};
+
+##################################################################
+
+
+
+# check_pi.run param
+
+param capacity{i in I, t in T};
+param capacityVM{i in I, t in T};
+param capacity_avg_VM{t in T};
+
+##################################################################

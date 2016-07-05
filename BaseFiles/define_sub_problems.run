@@ -1,0 +1,120 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - define_sub_problems.run file
+
+#############################
+### Social Optima problem ###
+#############################
+
+problem SocialOptima:
+	#vars
+	#r,
+	#d,
+	#s,
+	{j in S, k in Aj[j], i in Ij[j]} r[k,i],
+	{j in S, k in Aj[j], i in Ij[j]} d[k,i],
+	{j in S, k in Aj[j], i in Ij[j]} s[k,i],
+	#constraints
+	r_pos,
+	d_pos,
+	s_pos,
+	s_max,
+	X_min,
+	X_max,
+	R_max,
+	vm_max,
+	#obj fun
+	potential;
+
+
+####################
+### SaaS problem ###
+####################
+
+problem SaaS{j in S}:
+	#vars
+	{k in Aj[j], i in Ij[j]} r[k,i],
+	{k in Aj[j], i in Ij[j]} d[k,i],
+	{k in Aj[j], i in Ij[j]} s[k,i],
+	#constraints
+	{k in Aj[j], i in Ij[j]} r_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} d_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_max[j,k,i],
+	{k in Aj[j]} X_min[j,k],
+	{k in Aj[j]} X_max[j,k],
+	{k in Aj[j], i in Ij[j]} R_max[j,i],
+	{i in Ij[j]} vm_max[j,i], 
+	#obj fun
+	omegaj[j];
+	
+	
+###########################
+### Algorithm 2 relaxed ###
+###########################
+
+problem SaaS_alg2_relaxed{j in S}:
+	#vars
+	{k in Aj[j], i in Ij[j]} r[k,i],
+	{k in Aj[j], i in Ij[j]} d[k,i],
+	{k in Aj[j], i in Ij[j]} s[k,i],
+	#constraints
+	{k in Aj[j], i in Ij[j]} r_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} d_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_max[j,k,i],
+	{k in Aj[j]} X_min[j,k],
+	{k in Aj[j]} X_max[j,k],
+	{k in Aj[j], i in Ij[j]} R_max[j,i],
+	#commentato perchè relaxed. 
+	#{i in Is[s]} vm_max[s,i],
+	#obj fun
+	omegaj[j];
+	
+###########################
+### Algorithm 2 dynamic ###
+###########################	
+	
+problem SaaS_mauro{j in S}:
+	#vars
+	{k in Aj[j], i in Ij[j]} r[k,i],
+	{k in Aj[j], i in Ij[j]} d[k,i],
+	{k in Aj[j], i in Ij[j]} s[k,i],
+	#constraints
+	{k in Aj[j], i in Ij[j]} r_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} d_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_max[j,k,i],
+	{k in Aj[j]} X_min[j,k],
+	{k in Aj[j]} X_max[j,k],
+	{k in Aj[j], i in Ij[j]} R_max[j,i],
+	{i in Ij[j]: flag[j,i]} vm_max_mauro[j,i],
+	#{i in Ij[j]: flag[j,i]} vm_max_unflag[j,i], 
+	#{i in Ij[j]} vm_max[j,i],
+	#obj fun
+	omegaj[j];
+
+###########################
+### Algorithm threshold ###
+###########################	
+
+problem SaaS_threshold{j in S}:
+	#vars
+	{k in Aj[j], i in Ij[j]} r[k,i],
+	{k in Aj[j], i in Ij[j]} d[k,i],
+	{k in Aj[j], i in Ij[j]} s[k,i],
+	{k in Aj[j], i in Ij[j]} x[k,i],
+	#constraints
+	{k in Aj[j], i in Ij[j]} r_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} d_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} x_pos[j,k,i],
+	{k in Aj[j], i in Ij[j]} s_max[j,k,i],
+	{k in Aj[j]} X_min_threshold[j,k],
+	{k in Aj[j]} X_max_threshold[j,k],
+	{k in Aj[j], i in Ij[j]} R_max[j,i],
+	{i in Ij[j]} vm_max[j,i],
+	{k in Aj[j], i in Ij[j]} U_threshold[j,k,i],
+	#obj fun
+	omegaj_threshold[j];
+
+	

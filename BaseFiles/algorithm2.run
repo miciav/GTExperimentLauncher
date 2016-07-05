@@ -1,0 +1,266 @@
+# Generalized Nash Equilibria? for Cloud Federation
+# First model - algorithm2.run file
+var ER{k in A, i in I}; # Estimated Response time
+var totX{j in S, i in Ij[j]};
+var SumViolations;
+var SumCost{j in S};
+var AvgCost;
+let AvgCost:=0;
+for{j in S, i in Ij[j]} let totX[j, i]:=0;
+for{j in S} let SumCost[j]:=0;
+let SumViolations:=0;
+
+for {t in T}{
+#for {t in 1..2}{
+	# importo le Lambda/lambda
+	for {k in A}{
+		let lambdaCurrent[k]:=lambda[k,t];
+		let LambdaCurrent[k]:=Lambda[k,t];	
+	}
+	#display LambdaCurrent;
+	
+	for{i in I}{	
+		for {j in S}{
+			let sigmamaxCurrent[j,i]:=sigmamax[j,i,t];
+    			let rhoCurrent[i]:=rho[i,t];
+    			let deltaCurrent[i]:=delta[i,t];
+		}
+	}
+	
+	# reset -
+	for {j in S}{
+		for {i in Ij[j]}{
+			for {k in Aj[j]}{
+				let s[k,i]:=0;
+				let r[k,i]:=0;
+				let d[k,i]:=0;
+			}
+		}
+	}
+
+
+####################
+### Algorithm 2 ####
+####################
+
+#nb: sono ancora dentro il ciclo t in T ---
+
+	# 0. Init
+	for{i in I} for {j in S} let sigmamaxCurrent[j,i]:=rhoCurrent[i] - epsilon;
+
+	printf "INIZIO CICLO[%d]\n", t;
+	printf"### step0 \n";
+	
+	# 1. Solution of relaxed subproblems
+	for{j in S} solve SaaS_alg2_relaxed[j];
+	
+	printf"### step1 \n";
+	
+	# 2. Stopping criterion
+	
+	let counter:=1; #diverso da 0
+	let iteration := 0;	
+	repeat while ( counter > 0 ){
+		
+		let counter:=0;
+		
+		for{i in I}{
+			let M[i]:= round(sum{j in Si[i], k in Aj[j]} (r[k,i] + d[k,i] + s[k,i]),6);		
+			for{j in S} let flag[j,i]:=0;
+		}
+		
+		for{i in I}{
+			if ( M[i] > round(N[i],6) ) then {
+				for{j in Si[i]}{	
+					let N_alg2[j,i]:= sum{k in Aj[j]} (r[k,i] + d[k,i] + s[k,i]) * (N[i] / M[i]);
+					let flag[j,i]:=1;
+				}
+
+				let counter:=counter+1;
+				
+				
+				printf "counter[t=%d] = %d\n", t, counter > "./logs/logs_counter.out";
+				#display counter > "./logs/logs_counter.out"
+			}	
+		}
+		
+		printf"### step2 \n";
+		
+		# 3. New subproblems
+		
+		for{j in S} solve SaaS_mauro[j];
+		let iteration:=iteration+1;
+		
+		if (iteration >100) then break;
+
+		printf"### step3 \n";
+		
+	}
+	let iterations[t] := iteration;
+	if (iteration >100) then break;	
+
+	# 4. Evaluation
+	
+	include tot_vm_i.run;
+	
+	# resetto il prezzo reale delle on-spot per calcolare il socialoptima. 
+	for{i in I} for {j in S} let sigmamaxCurrent[j,i]:=sigmamax[j,i,t];
+
+	# BR
+	for{j in S} let IWC_br[j,t]:=omegaj[j];
+	
+	let potentialStep3_S[t]:=potential;
+
+	# cost
+	for{j in S} let SumCost[j]:= SumCost[j]+omegaj[j]; #calcolo la somma dei costi per S per tutte le ore
+	
+	# SO
+	printf"### solving the SO \n";
+	solve SocialOptima;
+
+	for{j in S} let IWC_so[j,t]:=omegaj[j];
+
+	let potentialSO[t]:=potential;
+
+	printf "FINE CICLO[%d]\n", t;
+	printf "==========================\n";
+
+	# calcolo delle x[k,i]
+	for {j in S} for {k in Aj[j]} for {i in Ij[j]} let x[k,i]:= (mu[k,i]-1/(overlineR[k] - D[k,i]))*(r[k,i]+d[k,i]+s[k,i]);
+
+	for {j in S}
+		for {k in Aj[j]}
+			for {i in Ij[j]}{
+					if ( (r[k,i]+d[k,i]+s[k,i]) > 0 ) then{  
+						let ER[k,i]:= 1/(mu[k,i]-(x[k,i]/(r[k,i]+d[k,i]+s[k,i])));
+
+						if ( ER[k,i]>overlineR[k]+0.00001 ) then { 
+						let SumViolations:=SumViolations+1;
+						}
+					}
+			}
+
+
+
+##################
+### x[k,i] 	   ###
+##################
+#printf "T = %d\n", t >"./matlab/workloads.csv";
+#for {k in Aj[1]} for {i in Ij[1]} printf "%2.5f\n", x[k,i] > "./matlab/workloads.csv";
+for{j in S, i in Ij[j]} let totX[j,i]:= totX[j,i]+sum{k in Aj[j]} x[k,i]; #sommo su tutte le app
+} # chiusura di t in T
+
+
+
+
+if (iteration <100) then {
+##################
+### Violations ###
+##################
+
+#rm ./logs/violations.txt
+printf "Total violations = %d", SumViolations >>./logs/violations.txt;
+
+
+##################
+### cost 	   ###
+##################
+
+let AvgCost:= sum{j in S}SumCost[j]/ card(S);
+display AvgCost > "./matlab/cost.csv";
+
+##################
+## workloads #####
+##################
+
+if(card(Ij[1])==1) then printf "No apply" > "./matlab/workloads.csv";
+if(card(Ij[1])>1) then {
+ for{j in S}{
+ 	for{i in Ij[j]} printf "%2.5f\t", totX[j, i]*3600*462 > "./matlab/workloads.csv";
+ 	printf "\n" > "./matlab/workloads.csv";
+ 	} 	
+}
+
+
+printf "No apply" > "./matlab/workloads.csv";
+
+
+
+##################
+### PoA & IWC ####
+##################
+
+for {t in T}{
+	
+### Alg2_step3_S / SO
+	let PoA_Alg2_step3_S_so[t]:= potentialStep3_S[t] / potentialSO[t];
+	
+	for{j in S}{		
+		let IWC[j,t] := IWC_br[j,t] / IWC_so[j,t];
+		
+		if ( BRmax[j] < IWC_br[j,t] )then let BRmax[j]:= IWC_br[j,t];
+
+		if ( IWCmax[j] < IWC[j,t] ) then let IWCmax[j]:= IWC[j,t];
+	
+	}
+	
+	let IWCmax_avg:= sum{j in S}IWCmax[j] / card(S);
+	let BRmax_avg:= sum{j in S}BRmax[j] / card(S);
+
+	include check_capacity.run;
+
+} #chiusura t in T ---
+
+let PoA_avg:= sum{t in T}PoA_Alg2_step3_S_so[t] / card(T);
+
+### scrittura per matlab
+
+for{t in T}{
+	printf "%2.5f\n", potentialStep3_S[t] > "./matlab/potential.csv";
+	printf "%2.5f\n", PoA_Alg2_step3_S_so[t] > "./matlab/poa.csv";
+	printf "%2.5f\n", capacity_avg_VM[t] > "./matlab/capacity.csv";
+	printf "%2.5f\n", iterations[t] > "./matlab/iterations.csv";
+}
+
+for{j in S}{
+	printf "%2.5f\n", IWCmax[j] > "./matlab/iwc.csv";
+	printf "%2.5f\n", BRmax[j] > "./matlab/br.csv";
+}
+
+
+#display PoA_Alg2_step2_so;
+#display PoA_Alg2_step3_S_so;
+display PoA_Alg2_step3_S_so;
+display PoA_Alg2_step3_S_so > "./logs/logs_iwc_alg2.out";
+display BRmax;
+display BRmax > "./logs/logs_iwc_alg2.out";
+display IWCmax;
+display IWCmax > "./logs/logs_iwc_alg2.out";
+#display IWC;
+#display IWC > "./logs/logs_iwc_alg2.out";
+#display capacity;
+display TotVMatI;
+#display TotVMatI > "./logs/logs_alg2_totvm.out";
+#display capacity > "./logs/logs_iwc_alg2.out";
+#display capacityVM;
+#display capacityVM > "./logs/logs_iwc_alg2.out";
+#display capacity_avg_VM;
+#display capacity_avg_VM > "./logs/logs_iwc_alg2.out";
+display IWCmax_avg;
+display BRmax_avg;
+display	PoA_avg;
+display iterations;
+}
+else
+{
+# I decided to create empty files, just in case	
+printf "Unfeasible" >> ./matlab/iwc.csv;
+printf "Unfeasible" >> ./matlab/poa.csv;
+printf "Unfeasible" >> ./matlab/iterations.csv;
+printf "Unfeasible" >> ./matlab/potential.csv;
+printf "Unfeasible" >> ./matlab/workloads.csv;
+#printf "Unfeasible" >> ./logs/resultValues.txt;
+printf "Unfeasible" >> ./matlab/cost.csv;
+printf "Unfeasible" >> ./logs/violations.txt;
+}
+#end. 
