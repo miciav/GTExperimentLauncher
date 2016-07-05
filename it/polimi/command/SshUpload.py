@@ -37,32 +37,32 @@ class file_uploader:
 
         # remove folders
         print("____________Removing remote Test Directory__________\n")
-        channel.send('rm -r ./Test_2\n')
+        channel.send('rm -rf ./GTExperimentLauncher\n')
         time.sleep(3)
         output = channel.recv(2024)
         print(output)
 
+
         print("____________Removing old execution folders___________\n")
-        channel.send('rm -r ./test_2_folder\n')
+        channel.send('rm -rf ./result_folder\n')
         time.sleep(4)
         output = channel.recv(2024)
         print(output)
-        channel.send('rm -r ./alg2_1_test_folder\n')
-        time.sleep(4)
-        output = channel.recv(2024)
-        print(output)
-        channel.send('rm -r ./alg2_2_test_folder\n')
-        time.sleep(4)
-        output = channel.recv(2024)
-        print(output)
-        channel.send('rm -r ./alg2_3_test_folder\n')
+        channel.send('rm -rf ./test_folder\n')
         time.sleep(4)
         output = channel.recv(2024)
         print(output)
 
+        algo_list = self.__ini_manager.get_algo_list()
+        for a in algo_list:
+            channel.send('rm -rf ./{}_test_folder\n'.format(a))
+            time.sleep(4)
+            output = channel.recv(2024)
+            print(output)
+
         try:
             server = sshServer.SSHManager(ssh)
-            local_path, remote_path = self.__ini_manager.get_general_settings()
+            local_path, remote_path = self.__ini_manager.get_remote_path()
 
             print('____________Starting directory uploading____________\n')
             server.put_dir_recursively(local_path, remote_path)

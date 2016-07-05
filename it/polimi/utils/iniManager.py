@@ -54,7 +54,7 @@ class iniManager:
         fields = self.__configSectionMap('connection settings')
         return fields.get('ip_server'), base64.b64decode(fields.get('password')), fields.get('username')
 
-    def get_general_settings(self):
+    def get_remote_path(self):
         fields = self.__configSectionMap('general settings')
         return os.getcwd(), fields.get('remote_path')
 

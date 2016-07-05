@@ -5,7 +5,8 @@ import os
 import subprocess
 import fileUtils
 import numpy
-import costManager
+
+from it.polimi.utils import costManager
 
 
 def clean_destination(destination_path, algo_list, phi_list, ni_range):
@@ -16,43 +17,43 @@ def clean_destination(destination_path, algo_list, phi_list, ni_range):
         fileUtils.check_path_and_clean(result_dir_path + '/' + algorithm)
         for phi in phi_list:
             fileUtils.check_path_and_clean(result_dir_path + '/' + algorithm + '/' + str(phi))
-            for i, ni in enumerate(ni_range):
-                finalPath = result_dir_path + '/' + algorithm + '/' + str(phi) + '/' + str(i + 1)
-                fileUtils.check_path_and_clean(finalPath)
+            for i in ni_range:
+                final_path = result_dir_path + '/' + algorithm + '/' + str(phi) + '/' + str(i)
+                fileUtils.check_path_and_clean(final_path)
 
 
-def launch(destination_path, algorithm, phi, ni, i, rand_seed):
-    currentDir = os.getcwd()
+def launch(destination_path, algorithm, phi, ni, rand_seed):
+    current_dir = os.getcwd()
     os.chdir(destination_path)
     file_to_run = './evaluate_' + algorithm + '_' + str(phi) + '_' + str(ni) + '_' + str(rand_seed) + '.run'
     subprocess.call(['./runAmpl', file_to_run])
 
     matlab_dir_path = destination_path + '/matlab'
-    logsPath = destination_path + '/logs'
+    logs_path = destination_path + '/logs'
     fileUtils.check_file(matlab_dir_path, 'iwc.csv')
     fileUtils.check_file(matlab_dir_path, 'poa.csv')
     fileUtils.check_file(matlab_dir_path, 'time.txt')
     fileUtils.check_file(matlab_dir_path, 'iterations.csv')
     fileUtils.check_file(matlab_dir_path, 'potential.csv')
-    fileUtils.check_file(logsPath, 'violations.txt')
+    fileUtils.check_file(logs_path, 'violations.txt')
 
-    resultDirPath = '{0}/results'.format(destination_path)
+    result_dir_path = '{0}/results'.format(destination_path)
     # fileUtils.CheckPathAndClean(resultDirPath)
     # fileUtils.CheckPathAndClean(resultDirPath+'/'+algorithm)
     # fileUtils.CheckPathAndClean(resultDirPath+'/'+algorithm+'/'+str(phi))
-    finalPath = resultDirPath + '/' + algorithm + '/' + str(phi) + '/' + str(i)
+    final_path = result_dir_path + '/' + algorithm + '/' + str(phi) + '/' + str(ni)
     # fileUtils.CheckPathAndClean(finalPath)
 
-    fileUtils.rename(matlab_dir_path + '/poa.csv', finalPath + '/' + 'poa_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/iwc.csv', finalPath + '/' + 'iwc_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/time.txt', finalPath + '/' + 'time_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/iterations.csv', finalPath + '/' + 'iterations_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/potential.csv', finalPath + '/' + 'potential_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/cost.csv', finalPath + '/' + 'cost_' + str(rand_seed) + '.txt')
-    fileUtils.rename(matlab_dir_path + '/workloads.csv', finalPath + '/' + 'workloads_' + str(rand_seed) + '.txt')
-    fileUtils.rename(logsPath + '/violations.txt', finalPath + '/' + 'violations_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/poa.csv', final_path + '/' + 'poa_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/iwc.csv', final_path + '/' + 'iwc_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/time.txt', final_path + '/' + 'time_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/iterations.csv', final_path + '/' + 'iterations_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/potential.csv', final_path + '/' + 'potential_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/cost.csv', final_path + '/' + 'cost_' + str(rand_seed) + '.txt')
+    fileUtils.rename(matlab_dir_path + '/workloads.csv', final_path + '/' + 'workloads_' + str(rand_seed) + '.txt')
+    fileUtils.rename(logs_path + '/violations.txt', final_path + '/' + 'violations_' + str(rand_seed) + '.txt')
 
-    # fileUtils.rename(logsPath+'/resultValues.txt',finalPath+'/'+'resultValues_'+str(rand_seed)+'.txt')
+    # fileUtils.rename(logs_path+'/resultValues.txt',finalPath+'/'+'resultValues_'+str(rand_seed)+'.txt')
 
     # debug
     # fileUtils.copyFile('poa.csv',matlab_dir_path,finalPath)
@@ -62,7 +63,7 @@ def launch(destination_path, algorithm, phi, ni, i, rand_seed):
     # fileUtils.copyFile('/potential.csv',matlab_dir_path,finalPath)
     # fileUtils.copyFile('/cost.csv',matlab_dir_path,finalPath)
     # fileUtils.copyFile('/workloads.csv',matlab_dir_path,finalPath)
-    # fileUtils.copyFile('/violations.txt',logsPath,finalPath)
+    # fileUtils.copyFile('/violations.txt',logs_path,finalPath)
     # fileUtils.rename(finalPath+'/poa.csv',finalPath+'/'+'poa_'+str(rand_seed)+'.txt')
     # fileUtils.rename(finalPath+'/iwc.csv',finalPath+'/'+'iwc_'+str(rand_seed)+'.txt')
     # fileUtils.rename(finalPath+'/time.txt',finalPath+'/'+'time_'+str(rand_seed)+'.txt')
@@ -71,7 +72,7 @@ def launch(destination_path, algorithm, phi, ni, i, rand_seed):
     # fileUtils.rename(finalPath+'/violations.txt',finalPath+'/'+'violations_'+str(rand_seed)+'.txt')
     # fileUtils.rename(finalPath+'/cost.csv',finalPath+'/'+'cost_'+str(rand_seed)+'.txt')
     # fileUtils.rename(finalPath+'/workloads.csv',finalPath+'/'+'workloads_'+str(rand_seed)+'.txt')
-    os.chdir(currentDir)
+    os.chdir(current_dir)
 
 
 def launch_all(destination_path, algo_list, phi_list, ni_range, rand_seed_list):
@@ -83,13 +84,13 @@ def launch_all(destination_path, algo_list, phi_list, ni_range, rand_seed_list):
     clean_destination(destination_path, algo_list, phi_list, ni_range)
     for phiVal in phi_list:
         print('Phi value\t=\t{0}\t'.format(str(phiVal)))
-        for i, niVal in enumerate(ni_range):
-            print('Ni value\t=\t' + str(niVal) + '\t')
+        for ni_val in ni_range:
+            print('Ni value\t=\t' + str(ni_val) + '\t')
             for alg in algo_list:
                 print('Algorithm\t:\t' + alg + '\t')
                 for randSeed in rand_seed_list:
                     print('RandSeed\t=\t' + str(randSeed) + '\n')
-                    launch(destination_path, alg, phiVal, niVal, i + 1, randSeed)
+                    launch(destination_path, alg, phiVal, ni_val, randSeed)
 
 
 def mean_time(destinationPath, algorithm, phi, ni, randSeedList):
@@ -220,16 +221,16 @@ def testIWC(strDestination, algoList, phiList, niRange, randSeedList):
     for alg in algoList:
         for phiVal in phiList:
             for niVal in niRange:
-                positive = checkIWCpositive(strDestination, alg, phiVal, niVal, randSeedList)
+                positive = check_iwc_positive(strDestination, alg, phiVal, niVal, randSeedList)
                 f.write(alg + '\t' + str(phiVal) + '\t' + str(niVal) + '\t' + str(positive) + '\n')
     f.close()
 
 
-def checkIWCpositive(destinationPath, alg, phiVal, niVal, randSeedList):
-    fullPath = destinationPath + '/results/' + alg + '/' + str(phiVal) + '/' + str(niVal)
+def check_iwc_positive(destination_path, alg, phi_val, ni_val, randseed_list):
+    full_path = destination_path + '/results/' + alg + '/' + str(phi_val) + '/' + str(ni_val)
     positive = True
-    for randSeed in randSeedList:
-        with open(fullPath + '/iwc_' + str(randSeed) + '.txt', 'r') as f:
+    for randSeed in randseed_list:
+        with open(full_path + '/iwc_' + str(randSeed) + '.txt', 'r') as f:
             for line in f.readlines():
                 words = line.split()
                 # print(algorithm+'\t'+str(phi)+'\t'+str(ni)+'\t'+str(randSeed)+'\n')
@@ -240,7 +241,7 @@ def checkIWCpositive(destinationPath, alg, phiVal, niVal, randSeedList):
                         break
                 except:
                     print('negative IWC!\n')
-        if positive == False:
+        if not positive:
             break
     return positive
 
@@ -249,7 +250,7 @@ def collect_results(destination_path, algo_list, phi_list, ni_range, rand_seed_l
     fileUtils.check_path_and_clean(destination_path)
     result_dir_path = '{0}/results'.format(destination_path)
     fileUtils.check_path_and_clean(result_dir_path)
-    joinResults(algo_list, destination_path)
+    join_results(algo_list, destination_path)
     f = open('{0}/finalResults.txt'.format(result_dir_path), 'w')
 
     f.write('Algorithm\tPhi\tNi\tTime\tPotential\tPoA\tIWC\tCost\n')
@@ -481,13 +482,13 @@ def egress_costs_param(destination_path, alg, num_iaas, phiVal, niVal, seedList,
             return 0
 
 
-def joinResults(algoList, destinationPath):
-    for algo in algoList:
-        strOrigin = "../" + algo + "_test_folder/results"
-        strDestination = destinationPath + '/results'
-        # print(strOrigin+'\n')
-        # print(strDestination+'\n')
-        fileUtils.copy_dir(strOrigin, strDestination)
+def join_results(algo_list, destination_path):
+    for algo in algo_list:
+        str_origin = "../" + algo + "_test_folder/results"
+        str_destination = destination_path + '/results'
+        # print(str_origin+'\n')
+        # print(str_destination+'\n')
+        fileUtils.copy_dir(str_origin, str_destination)
 
 
 def calc_workflow(destinationPath, algoList, phiList, niRange, randSeedList):

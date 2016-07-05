@@ -1,13 +1,10 @@
-from __future__ import print_function
-from __future__ import with_statement
 
 import os
 import time
 
 import paramiko
 
-from it.polimi.server import fileUtils
-
+from paramiko.client import SSHClient
 """
 This is the script that launch all the experiments. 
 It connects via SSH to the server, copies the data and launches the experiments in different screens
@@ -30,30 +27,40 @@ class ExpLauncher:
 
     def run(self):
         print("____________Launching test using screen__________\n")
-        ssh = self.__connect()
 
+        ssh = self.__connect()
+        algo_list = self.__ini_manager.get_algo_list()
+        server, p, username = self.__ini_manager.get_connection_settings()
         channel = ssh.invoke_shell()
         channel.send('bash\n')
         time.sleep(1)
         output = channel.recv(2024)
         print(output)
-        channel.send('cd server/\n')
+        channel.send("kill $(pgrep -U "+username+" screen)\n")
         time.sleep(1)
         output = channel.recv(2024)
         print(output)
-        channel.send('screen -S test_2 -d -m python run.py alg2_1\n')
-        time.sleep(3)
-        output = channel.recv(5000)
+        channel.send('cd GTExperimentLauncher/it/polimi\n export PYTHONPATH=.\n')
+        time.sleep(1)
+        output = channel.recv(2024)
         print(output)
-        channel.send('screen -S test_2 -d -m python run.py alg2_2\n')
-        time.sleep(3)
-        output = channel.recv(5000)
+        channel.send('cd ../..\n ')
+        time.sleep(1)
+        output = channel.recv(2024)
         print(output)
-        channel.send('screen -S test_2 -d -m python run.py alg2_3\n')
-        time.sleep(3)
-        output = channel.recv(5000)
-        print(output)
-        channel.send('screen -S test_2 -d -m python executionChecker.py\n')
+
+        i = 0
+        for a in algo_list:
+            command = 'screen -S test_{} -d -m python it/polimi/server/run.py {} \n'.format(i, a)
+            #command = 'python it/polimi/server/run.py {} \n'.format(a)
+            print(command)
+            channel.send(command)
+            time.sleep(3)
+            output = channel.recv(10000)
+            print(output)
+            i+=1
+
+        channel.send('screen -S checker -d -m python it/polimi/server/executionChecker.py\n'.format(i))
         time.sleep(3)
         output = channel.recv(5000)
         print(output)

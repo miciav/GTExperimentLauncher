@@ -14,13 +14,16 @@ i_manager.readIni()
 
 algoList2Check = i_manager.get_algo_list()
 
+print(algoList2Check)
 algo = sys.argv[1]
 if algo not in algoList2Check:
     sys.exit("Unknown algorithm " + sys.argv[1])
 
-strOrigin = " ../../../BaseFiles/"  # directory of base files; those with the definition of algorithms
-strDestination = "../../../../" + algo + "_test_folder"  # output directory
-
+cwd, remote_path = i_manager.get_remote_path()
+strOrigin = cwd + "/BaseFiles"  # directory of base files; those with the definition of algorithms
+print(strOrigin)
+strDestination = remote_path+ "/" + algo + "_test_folder"  # output directory
+print(strDestination)
 # checking existence of work-directory
 fileUtils.check_path(strOrigin)
 
@@ -31,7 +34,7 @@ print('Checks\tOk\n')
 algoList = [algo]
 phiList = i_manager.get_phi_list()
 
-randSeedList = range(i_manager.get_num_repetitions()+1)
+randSeedList = range(1, i_manager.get_num_repetitions() + 1)
 
 print("Algorithm to execute: " + sys.argv[1] + "\n")
 
@@ -54,12 +57,10 @@ print('Creation Environment\tOk\n')
 
 print('Running the test...\n')
 
-executor.launchAll(strDestination, algoList, phiList, niRange, randSeedList)
+executor.launch_all(strDestination, algoList, phiList, niRange, randSeedList)
 # executor.testIWC(strDestination,algoList,phiList,niRange,randSeedList)
 # executor.collectResults(strDestination,algoList,phiList,niRange,randSeedList)
 
 print('-----------------------------------------------------------------------------\n')
 print('                                 Test 1 finished\n')
 print('-----------------------------------------------------------------------------\n')
-
-
