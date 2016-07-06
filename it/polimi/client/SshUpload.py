@@ -1,12 +1,7 @@
 from __future__ import print_function
 from __future__ import with_statement
 
-import os
-import time
-
-import paramiko
-
-import it.polimi.command.sshServer as sServer
+import it.polimi.client.sshServer as sServer
 
 """
 This is for uploading all the files.

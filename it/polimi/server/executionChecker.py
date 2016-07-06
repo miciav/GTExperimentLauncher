@@ -1,9 +1,10 @@
-from subprocess import check_output
-import time
 import os
-from it.polimi.server import fileUtils
+import time
+from subprocess import check_output
+
 from it.polimi.server import executor
-from it.polimi.utils import iniManager
+from it.polimi.server import fileUtils
+from it.polimi.utils import IniManager
 
 
 def get_pid(comm):
@@ -17,7 +18,8 @@ def get_pid(comm):
         print('error in getting pid')
         return map(int, [0])
 
-i_manager = iniManager.iniManager(os.getcwd())
+
+i_manager = IniManager.IniManager(os.getcwd())
 i_manager.read_ini()
 server, p, username = i_manager.get_connection_settings()
 command = ['pgrep', "-u", username, 'screen']
@@ -55,6 +57,4 @@ fileUtils.check_path(strDestination)
 fileUtils.check_path(filePath)
 
 executor.collect_results(strDestination, algoList, phiList, niRange, randSeedList)
-# executor.testIWC(strDestination,algoList,phiList,iRange, randSeedList)
-# fileUtils.checkFile(filePath,iwcCheckFile)
 fileUtils.check_file(filePath, finalResultFile)

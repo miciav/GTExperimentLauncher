@@ -1,10 +1,10 @@
 import os
 
-from it.polimi.command import SshUpload
-from it.polimi.utils import iniManager
-from it.polimi.command import SshLaunch
-from it.polimi.command import checker
-from it.polimi.command import sshDowload
+from it.polimi.client import SshLaunch
+from it.polimi.client import SshUpload
+from it.polimi.client import checker
+from it.polimi.client import sshDowload
+from it.polimi.utils import IniManager
 
 
 def print_menu():
@@ -35,40 +35,40 @@ def select_from_menu():
 
 
 def check_conf():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager(os.getcwd())
     i_manager.read_ini()
 
 
 def clean_remote():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     uploader = SshUpload.FileUploader(i_manager)
     uploader.clean_remote()
 
 
 def send_remote():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     uploader = SshUpload.FileUploader(i_manager)
     uploader.send()
 
 
 def launch_remote():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     launcher = SshLaunch.ExpLauncher(i_manager)
     launcher.run()
 
 
 def check_status():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     check = checker.StatusChecker(i_manager)
     check.start_checking()
 
 
 def download():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     dl = sshDowload.Downloader(i_manager)
     dl.compress()
@@ -76,7 +76,7 @@ def download():
 
 
 def full_experiment():
-    i_manager = iniManager.iniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
     uploader = SshUpload.FileUploader(i_manager)
     uploader.clean_remote()

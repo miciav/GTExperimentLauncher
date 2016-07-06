@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='GTExperimentLauncher',
     version='',
-    packages=['it', 'it.polimi', 'it.polimi.test', 'it.polimi.utils', 'it.polimi.server', 'it.polimi.command'],
+    packages=['it', 'it.polimi', 'it.polimi.test', 'it.polimi.utils', 'it.polimi.server', 'it.polimi.client'],
     url='',
     license='Apache license 2.0',
     author='Miciav',

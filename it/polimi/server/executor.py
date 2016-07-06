@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-
 from __future__ import print_function
+
 import os
 import subprocess
-from it.polimi.server import fileUtils
+
 import numpy
 
-from it.polimi.utils import costManager
+from it.polimi.server import fileUtils
 
 
 def clean_destination(destination_path, algo_list, phi_list, ni_range):
@@ -127,36 +126,36 @@ def mean_poa_and_iwc(index, destinationPath, algorithm, phi, ni, randSeedList):
         return '-'
 
 
-def numInfeasibilities(index, destinationPath, algorithm, phi, ni, randSeedList):
-    fullPath = destinationPath + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
-    poaValues = []
-    infValues = []
-    for randSeed in randSeedList:
+def num_infeasibilities(index, destination_path, algorithm, phi, ni, randseed_list):
+    full_path = destination_path + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
+    poa_values = []
+    inf_values = []
+    for randSeed in randseed_list:
         myFlag = True
-        with open(fullPath + '/' + index + '_' + str(randSeed) + '.txt', 'r') as f:
+        with open(full_path + '/' + index + '_' + str(randSeed) + '.txt', 'r') as f:
             for line in f.readlines():
                 words = line.split()
                 # print(algorithm+'\t'+str(phi)+'\t'+str(ni)+'\t'+str(randSeed)+'\n')
                 try:
-                    poaValues.append(float(words[0]))
+                    poa_values.append(float(words[0]))
                 except:
-                    infValues.append(1)
+                    inf_values.append(1)
                     # if algorithm == 'threshold':
                     #	print(algorithm+' Infeasibility found!\n')
                     myFlag = False
 
         if myFlag:
-            infValues.append(0)
+            inf_values.append(0)
 
-    # print(len(infValues))
+    # print(len(inf_values))
     # print('\n')
-    return str(numpy.sum(infValues))
+    return str(numpy.sum(inf_values))
 
 
-def meanViolations(destinationPath, algorithm, phi, ni, randSeedList):
-    fullPath = destinationPath + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
+def mean_violations(destination_path, algorithm, phi, ni, randseed_list):
+    fullPath = destination_path + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
     violations = []
-    for randSeed in randSeedList:
+    for randSeed in randseed_list:
         with open(fullPath + '/violations_' + str(randSeed) + '.txt', 'r') as f:
             for line in f.readlines():
                 words = line.split()
@@ -295,62 +294,6 @@ def collect_results(destination_path, algo_list, phi_list, ni_range, rand_seed_l
 # 			f.write(alg+'\t\t'+str(phiVal)+'\t'+str(niVal)+'\t'+cost+'\t'+violations+'\t'+iterations+ '\t\t'+str(flow1)+'\t'+str(flow2)+'\t'+str(flow3)+'\t'+str(dataTransfer)+ '\n')
 # f.close()
 
-def calc_sync_cost(destination_path, algoList, phiList, niRange, randSeedList):
-    resultDirPath = destination_path + '/results'
-    f = open(resultDirPath + '/EgressCosts.txt', 'w')
-
-    f.write('Algorithm\tPhi\tNi\tEgressCost\n')
-    f.write('___________________________________________________________________________________\n')
-    for alg in algoList:
-        num_iaas = 0
-
-        if alg == 'alg2_1':
-            num_iaas = 1
-
-        if alg == 'alg2_2':
-            num_iaas = 2
-
-        if alg == 'alg2_3':
-            num_iaas = 3
-
-        for phiVal in phiList:
-            for niVal in niRange:
-                data_transfer = egress_costs(destination_path, alg, num_iaas, phiVal, niVal, randSeedList)
-                f.write(alg + '\t\t' + str(phiVal) + '\t' + str(niVal) + '\t' + str(data_transfer) + '\n')
-    f.close()
-
-
-def calc_synch_cost_graph(destinationPath, algoList, phiList, niRange, randSeedList):
-    resultDirPath = destinationPath + '/results'
-    f = open(resultDirPath + '/GraphCost.txt', 'w')
-
-    f.write('Algorithm\tPhi\X\tEgressCost\n')
-    f.write('___________________________________________________________________________________\n')
-    for x in range(500, 50000, 500):
-        for alg in algoList:
-            num_iaas = 0
-            if alg == 'alg2_1':
-                num_iaas = 1
-            if alg == 'alg2_2':
-                num_iaas = 2
-            if alg == 'alg2_3':
-                num_iaas = 3
-            for phiVal in phiList:
-                data_transfer = []
-                for niVal in niRange:
-                    data_transfer.append(
-                        egress_costs_param(destinationPath, alg, num_iaas, phiVal, niVal, randSeedList, x))
-                if len(data_transfer) > 0:
-                    # print(data_transfer)
-                    # print('___________')
-                    meanDataTransfer = str(numpy.mean(data_transfer))
-                else:
-                    meanDataTransfer = '0'
-
-                f.write(alg + '\t\t' + str(phiVal) + '\t' + str(x) + '\t' + str(meanDataTransfer) + '\n')
-    f.close()
-
-
 def workflow(pType, destinationPath, alg, phiVal, niVal):
     fullPath = destinationPath + '/results/' + alg + '/' + str(phiVal) + '/' + str(niVal)
     D = 462  # number of bytes for record
@@ -388,110 +331,14 @@ def workflow(pType, destinationPath, alg, phiVal, niVal):
             return dataFlow3
 
 
-def egress_costs(destinationPath, alg, numIaaS, phiVal, niVal, seedList):
-    # print('numIaaS: '+str(numIaaS))
-    # print('alg: '+alg)
-    # print('phi: '+str(phiVal))
-    # print('ni: '+str(niVal))
-
-    if numIaaS == 1:
-        return 0
-    else:
-        fullPath = destinationPath + '/results/' + alg + '/' + str(phiVal) + '/' + str(niVal)
-        vettEgrCosts = []
-        sumIaaS1 = 0
-        for seed in seedList:
-            print('seed: ' + str(seed))
-            filePath = fullPath + '/workloads_' + str(seed) + '.txt'
-            print(filePath)
-            with open(filePath, 'r') as f:
-                for line in f.readlines():
-                    if line != 'No apply':
-                        words = line.split()
-                        sumIaaS1 = 0
-                        sumIaaS1 = float(words[0])
-                        dataFlow1 = sumIaaS1 * 30
-                        # print('dt1: '+str(dataFlow1))
-                        # print('dt1: '+str(costManager.convertTB(dataFlow1*30)))
-                        # print('AmazonCost: '+str(costManager.AmazonCost(dataFlow1)))
-                        sumIaaS2 = float(words[1])
-                        dataFlow2 = sumIaaS2 * 30
-                        # print('dt2: '+str(dataFlow2))
-                        # print('dt2: '+str(costManager.convertTB(dataFlow2*30)))
-                        # print('GoogleCost: '+str(costManager.GoogleCost(dataFlow1)))
-
-                        if numIaaS == 2:
-                            vettEgrCosts.append(costManager.AmazonCost(dataFlow1) + costManager.GoogleCost(dataFlow2))
-                        if numIaaS == 3:
-                            sumIaaS3 = 0
-                            sumIaaS3 = float(words[2])
-                            dataFlow3 = sumIaaS3 * 30
-                            vettEgrCosts.append(costManager.AmazonCost(2 * dataFlow1) + costManager.GoogleCost(
-                                2 * dataFlow2) + costManager.AzureCost(2 * dataFlow3))
-
-        if len(vettEgrCosts) > 0:
-            return str(numpy.mean(vettEgrCosts))
-        else:
-            return '-'
-
-
-def egress_costs_param(destination_path, alg, num_iaas, phiVal, niVal, seedList, Param):
-    # print('num_iaas: '+str(num_iaas))
-    # print('alg: '+alg)
-    # print('phi: '+str(phiVal))
-    # print('ni: '+str(niVal))
-    factor = Param / 462.0
-    if num_iaas == 1:
-        return 0
-    else:
-        fullPath = destination_path + '/results/' + alg + '/' + str(phiVal) + '/' + str(niVal)
-        vettEgrCosts = []
-        sumIaaS1 = 0
-        for seed in seedList:
-            # print('seed: '+str(seed))
-            filePath = fullPath + '/workloads_' + str(seed) + '.txt'
-            # print(filePath)
-            with open(filePath, 'r') as f:
-                for line in f.readlines():
-                    if line != 'No apply':
-                        words = line.split()
-                        sumIaaS1 = 0
-                        sumIaaS1 = float(words[0])
-                        dataFlow1 = sumIaaS1 * 30 * factor
-                        # print('dt1: '+str(dataFlow1))
-                        # print('dt1: '+str(costManager.convertTB(dataFlow1*30)))
-                        # print('AmazonCost: '+str(costManager.AmazonCost(dataFlow1)))
-                        sumIaaS2 = float(words[1])
-                        dataFlow2 = sumIaaS2 * 30 * factor
-                        # print('dt2: '+str(dataFlow2))
-                        # print('dt2: '+str(costManager.convertTB(dataFlow2*30)))
-                        # print('GoogleCost: '+str(costManager.GoogleCost(dataFlow1)))
-
-                        if num_iaas == 2:
-                            vettEgrCosts.append(costManager.AmazonCost(dataFlow1) + costManager.GoogleCost(dataFlow2))
-                        if num_iaas == 3:
-                            sumIaaS3 = 0
-                            sumIaaS3 = float(words[2])
-                            dataFlow3 = sumIaaS3 * 30 * factor
-                            vettEgrCosts.append(costManager.AmazonCost(2 * dataFlow1) + costManager.GoogleCost(
-                                2 * dataFlow2) + costManager.AzureCost(2 * dataFlow3))
-
-        if len(vettEgrCosts) > 0:
-            return numpy.mean(vettEgrCosts) / 30
-        else:
-            return 0
-
-
 def join_results(algo_list, destination_path):
     for algo in algo_list:
         str_origin = "../" + algo + "_test_folder/results"
         str_destination = destination_path + '/results'
-        # print(str_origin+'\n')
-        # print(str_destination+'\n')
         fileUtils.copy_dir(str_origin, str_destination)
 
 
-def calc_workflow(destinationPath, algoList, phiList, niRange, randSeedList):
+def calc_workflow(destination_path, algoList, phiList, niRange, randseed_list):
     for alg in algoList:
         num_iaas = 0
         if alg == 'alg2_1':
@@ -502,7 +349,7 @@ def calc_workflow(destinationPath, algoList, phiList, niRange, randSeedList):
             num_iaas = 3
         for phiVal in phiList:
             for niVal in niRange:
-                split_workflow(destinationPath, alg, num_iaas, phiVal, niVal, randSeedList)
+                split_workflow(destination_path, alg, num_iaas, phiVal, niVal, randseed_list)
 
 
 def split_workflow(destinationPath, alg, numIaaS, phiVal, niVal, randSeedList):

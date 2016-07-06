@@ -1,10 +1,10 @@
-from ConfigParser import ConfigParser
 import base64
 import getpass
 import os
+from ConfigParser import ConfigParser
 
 
-class iniManager:
+class IniManager:
     file_path = ''
     file_name = 'properties.ini'
     __full_file_name = ''

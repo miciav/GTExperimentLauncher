@@ -1,9 +1,4 @@
-import os
-import time
-
-import paramiko
-
-from it.polimi.command.sshServer import SSHManager
+from it.polimi.client.sshServer import SSHManager
 
 """
 This is the script that launch all the experiments. 
@@ -31,7 +26,7 @@ class ExpLauncher:
 
         i = 0
         for a in algo_list:
-            command = 'screen -S test_{} -d -m python it/polimi/server/run.py {} \n'.format(i, a)
+            command = 'screen -S test_{} -d -m python it/polimi/server/runner.py {} \n'.format(i, a)
             command_list.append(command)
             i += 1
 

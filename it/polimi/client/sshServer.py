@@ -1,6 +1,7 @@
 import os.path
 import time
-import paramiko
+
+from paramiko import AutoAddPolicy, SSHClient
 
 
 class SSHManager:
@@ -12,8 +13,8 @@ class SSHManager:
 
     def __connect(self):
         server, p, username = self.__ini_manager.get_connection_settings()
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh = SSHClient()
+        ssh.set_missing_host_key_policy(AutoAddPolicy())
         ssh.load_host_keys(os.path.expanduser(os.path.join("~", ".ssh", "known_hosts")))
         ssh.connect(server, username=username, password=p)
         return ssh

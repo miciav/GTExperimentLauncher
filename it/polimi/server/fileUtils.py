@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-import os
-import sys
-import fileinput
-import shutil
 import base64
+import fileinput
 import getpass
+import os
+import shutil
+import sys
 
 
 def file_copy(file_name, file_path, destination_path):
@@ -61,47 +60,47 @@ def check_path(dir_path):
         os.mkdir(dir_path)
 
 
-def check_file(file_path, fileName):
+def check_file(file_path, filename):
     """
 
     :type file_path: str
     """
     try:
+        os.stat(file_path + '/' + filename)
+    except:
+        raise ValueError('No ' + filename + ' in destination directory ')
+
+
+def check_local_file(file_path, fileName):
+    try:
         os.stat(file_path + '/' + fileName)
     except:
-        raise ValueError('No ' + fileName + ' in destination directory ')
-
-
-def check_local_file(filePath, fileName):
-    try:
-        os.stat(filePath + '/' + fileName)
-    except:
-        f = open(filePath + '/' + fileName, 'w')
+        f = open(file_path + '/' + fileName, 'w')
         p = getpass.getpass('Password:')
         enc = base64.b64encode(p)
         f.write(enc + '\n')
         f.close()
 
 
-def getP(filePath, fileName):
+def get_pass(filePath, fileName):
     check_local_file(filePath, fileName)
     f = open(filePath + '/' + fileName, 'r')
     p = f.readline().split()
     return base64.b64decode(p[0])
 
 
-def change_static_definition(filePath, destinationPath, phi, ni):
-    defFileName = "static_definition"
-    fullFileName = '{0}/{1}.run'.format(filePath, defFileName)
-    check_file(filePath, defFileName + ".run")
-    destinationFileName = destinationPath + '/' + defFileName + '_' + str(phi) + '_' + str(ni) + '.run'
-    shutil.copy2(fullFileName, destinationPath)  # file copy
-    shutil.move(destinationPath + '/' + defFileName + '.run', destinationFileName)  # rename
+def change_static_definition(file_path, destination_path, phi, ni):
+    def_filename = "static_definition"
+    full_filename = '{0}/{1}.run'.format(file_path, def_filename)
+    check_file(file_path, def_filename + ".run")
+    destination_filename = destination_path + '/' + def_filename + '_' + str(phi) + '_' + str(ni) + '.run'
+    shutil.copy2(full_filename, destination_path)  # file copy
+    shutil.move(destination_path + '/' + def_filename + '.run', destination_filename)  # rename
 
-    for line in fileinput.input(destinationFileName, inplace=True):
+    for line in fileinput.input(destination_filename, inplace=True):
         sys.stdout.write(line.replace('N{i in I}:= 70', 'N{i in I}:= ' + str(ni)))
 
-    for line in fileinput.input(destinationFileName, inplace=True):
+    for line in fileinput.input(destination_filename, inplace=True):
         sys.stdout.write(line.replace('R{j in S, i in I}:=0.5', 'R{j in S, i in I}:=' + str(phi)))
 
 

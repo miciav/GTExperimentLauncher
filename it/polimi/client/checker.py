@@ -1,4 +1,4 @@
-from it.polimi.command.sshServer import SSHManager
+from it.polimi.client.sshServer import SSHManager
 
 
 class StatusChecker:
