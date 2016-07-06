@@ -6,68 +6,49 @@ import time
 
 import paramiko
 
-import sshServer
+import it.polimi.command.sshServer as sServer
 
 """
 This is for uploading all the files.
 """
 
 
-class file_uploader:
+class FileUploader:
     def __init__(self, ini_manager):
         self.__ini_manager = ini_manager
 
-    def __connect(self):
-        server, p, username = self.__ini_manager.get_connection_settings()
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.load_host_keys(os.path.expanduser(os.path.join("~", ".ssh", "known_hosts")))
-        ssh.connect(server, username=username, password=p)
-        return ssh
-
-    def send(self):
-        ssh = self.__connect();
-        channel = ssh.invoke_shell()
-
-        # invoke bash
-        channel.send('bash\n')
-        time.sleep(1)
-        output = channel.recv(2024)
-        print(output)
-
-        # remove folders
+    def clean_remote(self):
+        server = sServer.SSHManager(self.__ini_manager)
+        experiment_name = self.__ini_manager.get_experiment_name()
         print("____________Removing remote Test Directory__________\n")
-        channel.send('rm -rf ./GTExperimentLauncher\n')
-        time.sleep(3)
-        output = channel.recv(2024)
-        print(output)
-
+        command_list = ['rm -rf ./' + experiment_name]
+        server.exec_command(command_list, option=False)
 
         print("____________Removing old execution folders___________\n")
-        channel.send('rm -rf ./result_folder\n')
-        time.sleep(4)
-        output = channel.recv(2024)
-        print(output)
-        channel.send('rm -rf ./test_folder\n')
-        time.sleep(4)
-        output = channel.recv(2024)
-        print(output)
+        command_list = ['rm -rf ./result_folder', 'rm -rf ./test_folder']
 
         algo_list = self.__ini_manager.get_algo_list()
         for a in algo_list:
-            channel.send('rm -rf ./{}_test_folder\n'.format(a))
-            time.sleep(4)
-            output = channel.recv(2024)
-            print(output)
+            command_list.append('rm -rf ./{}_test_folder'.format(a))
+        command_list.append('rm ' + experiment_name + '.tar.gz')
 
+        server.exec_command(command_list, option=False)
+        server.close()
+
+    def send(self):
+        server = sServer.SSHManager(self.__ini_manager)
+        # send folders
         try:
-            server = sshServer.SSHManager(ssh)
+            experiment_name = self.__ini_manager.get_experiment_name()
             local_path, remote_path = self.__ini_manager.get_remote_path()
-
+            local_folder_name = self.__ini_manager.get_local_folder_name()
             print('____________Starting directory uploading____________\n')
             server.put_dir_recursively(local_path, remote_path)
             print('____________Directory uploading finished____________\n')
-
+            if local_folder_name != experiment_name:
+                server.exec_command(['mv {} {}'.format(local_folder_name, experiment_name)], option=False)
         except Exception as e:
+            print(e)
             print("Ops, something went wrong!\n")
-            ssh.close()
+
+        server.close()

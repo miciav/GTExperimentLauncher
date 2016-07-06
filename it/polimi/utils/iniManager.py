@@ -1,4 +1,4 @@
-import ConfigParser
+from ConfigParser import ConfigParser
 import base64
 import getpass
 import os
@@ -8,7 +8,7 @@ class iniManager:
     file_path = ''
     file_name = 'properties.ini'
     __full_file_name = ''
-    config = ConfigParser.ConfigParser()
+    config = ConfigParser()
 
     def __init__(self, path):
         self.file_path = path
@@ -17,11 +17,12 @@ class iniManager:
     def __check_existence_ini(self):
         try:
             os.stat(self.__full_file_name)
-        except:
-            f = open(self.__full_file_name, 'w')
-            f.close()
+        except Exception as e:
+            print(e)
+            config_file = open(self.__full_file_name, 'w')
+            config_file.close()
 
-    def __configSectionMap(self, section):
+    def __config_section_map(self, section):
         dict1 = {}
         options = self.config.options(section)
         for option in options:
@@ -37,45 +38,58 @@ class iniManager:
     def __set_ini_field(self, section, name_field, encript):
         p = getpass.getpass(name_field + ': \n')
         if encript:
-            enc = base64.b64encode(p)
+            enc64 = base64.b64encode(str.encode(p))
+            enc = bytes.decode(enc64)
         else:
             enc = p
         self.config.set(section, name_field, enc)
-        with open(self.__full_file_name, 'wb') as configfile:
+        with open(self.__full_file_name, 'w') as configfile:
             self.config.write(configfile)
 
     def __set_ini_section(self, section):
         self.config.add_section(section)
-        with open(self.__full_file_name, 'wb') as configfile:
+        with open(self.__full_file_name, 'w') as configfile:
             self.config.write(configfile)
 
     def get_connection_settings(self):
         # type: () -> str, str
-        fields = self.__configSectionMap('connection settings')
+        fields = self.__config_section_map('connection settings')
         return fields.get('ip_server'), base64.b64decode(fields.get('password')), fields.get('username')
 
+    def get_local_folder_name(self):
+        fields = self.__config_section_map('general settings')
+        return fields.get('folder_name')
+
     def get_remote_path(self):
-        fields = self.__configSectionMap('general settings')
+        fields = self.__config_section_map('general settings')
         return os.getcwd(), fields.get('remote_path')
 
     def get_algo_list(self):
-        fields = self.__configSectionMap('general settings')
+        fields = self.__config_section_map('general settings')
         return [x.strip() for x in fields.get('algo_list').split(',')]
 
     def get_phi_list(self):
-        fields = self.__configSectionMap('general settings')
+        fields = self.__config_section_map('general settings')
         return [x.strip() for x in fields.get('phi_list').split(',')]
 
     def get_num_repetitions(self):
-        fields = self.__configSectionMap('general settings')
+        fields = self.__config_section_map('general settings')
         return int(fields.get('num_repetitions'))
 
     def get_ni_info(self):
-        fields = self.__configSectionMap('general settings')
+        fields = self.__config_section_map('general settings')
         return int(fields.get('max_ni')), int(fields.get('min_ni')), int(fields.get('increasing_step'))
 
+    def get_experiment_name(self):
+        fields = self.__config_section_map('general settings')
+        return fields.get('experiment_name')
 
-    def readIni(self):
+    def get_download_folder(self):
+        fields = self.__config_section_map('general settings')
+
+        return fields.get('download_folder')
+
+    def read_ini(self):
         self.__check_existence_ini()
         self.config.read(self.__full_file_name)
 
@@ -84,7 +98,7 @@ class iniManager:
         if not sections.__contains__(section):
             self.__set_ini_section(section)
 
-        fields = self.__configSectionMap(section)
+        fields = self.__config_section_map(section)
         server_name = fields.get('ip_server', 'empty')
         if server_name == 'empty' or server_name == '':
             self.__set_ini_field(section, 'ip_server', False)
@@ -100,14 +114,14 @@ class iniManager:
                 self.__set_ini_field(section, 'password', True)
             else:
                 self.config.set(section, 'password', '')
-                with open(self.__full_file_name, 'wb') as configfile:
+                with open(self.__full_file_name, 'w') as configfile:
                     self.config.write(configfile)
 
         section = 'general settings'
         if not sections.__contains__(section):
             self.__set_ini_section(section)
 
-        fields = self.__configSectionMap(section)
+        fields = self.__config_section_map(section)
 
         remote_path = fields.get('remote_path', 'empty')
         if remote_path == 'empty' or remote_path == '':
@@ -137,5 +151,29 @@ class iniManager:
         if increasing_step == 'empty' or increasing_step == '':
             self.__set_ini_field(section, 'increasing_step', False)
 
+        experiment_name = fields.get('experiment_name', 'empty')
+        if experiment_name == 'empty':
+            ris = raw_input('Do you want to set a name for the experiment? (y/n) :\n')
+            if ris == 'y':
+                self.__set_ini_field(section, 'experiment_name', False)
+            else:
+                self.config.set(section, 'experiment_name', os.path.basename(os.getcwd()))
+                with open(self.__full_file_name, 'w') as configfile:
+                    self.config.write(configfile)
+        folder_name = fields.get('folder_name', 'empty')
+        if folder_name == 'empty' or folder_name == '':
+            self.config.set(section, 'folder_name', os.path.basename(os.getcwd()))
+            with open(self.__full_file_name, 'w') as configfile:
+                self.config.write(configfile)
 
-        print("Init file charged!")
+        download_folder = fields.get('download_folder', 'empty')
+        if download_folder == 'empty':
+            ris = raw_input('Do you want to set a download folder for the experiment? (y/n) :\n')
+            if ris == 'y':
+                self.__set_ini_field(section, 'download_folder', False)
+            else:
+                self.config.set(section, 'download_folder', os.path.basename(os.getcwd()))
+                with open(self.__full_file_name, 'w') as configfile:
+                    self.config.write(configfile)
+
+       # print("Init file charged!")

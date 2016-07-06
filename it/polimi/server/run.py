@@ -2,15 +2,15 @@
 
 import os
 import sys
-import fileUtils
-import executor
+from it.polimi.server import fileUtils
+from it.polimi.server import executor
 
 from it.polimi.utils import iniManager
 
 # the script starts here
 
 i_manager = iniManager.iniManager(os.getcwd())
-i_manager.readIni()
+i_manager.read_ini()
 
 algoList2Check = i_manager.get_algo_list()
 

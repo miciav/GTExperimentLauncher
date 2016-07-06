@@ -1,38 +1,36 @@
+from it.polimi.command.sshServer import SSHManager
 
-import os
-import time
 
-import paramiko
-
-class dowloader:
-
+class Downloader:
     def __init__(self, ini_manager):
         self.__ini_manager = ini_manager
 
-    def __connect(self):
-        server, p, username = self.__ini_manager.get_connection_settings()
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.load_host_keys(os.path.expanduser(os.path.join("~", ".ssh", "known_hosts")))
-        ssh.connect(server, username=username, password=p)
-        return ssh
-
     def compress(self):
-        print("____________Launching test using screen__________\n")
+        print("____________Compressing remote files__________\n")
+        server = SSHManager(self.__ini_manager)
 
-        ssh = self.__connect()
-        #algo_list = self.__ini_manager.get_algo_list()
-        #server, p, username = self.__ini_manager.get_connection_settings()
-        channel = ssh.invoke_shell()
-        channel.send('bash\n')
-        time.sleep(1)
-        output = channel.recv(2024)
-        print(output)
-        channel.send('tar -cvzf GTExperimentLauncher.tar.gz GTExperimentLauncher\n')
-        time.sleep(1)
-        output = channel.recv(2024)
-        print(output)
+        algo_list = self.__ini_manager.get_algo_list()
 
-        ssh.close()
+        # server, p, username = self.__ini_manager.get_connection_settings()
+        experiment_name = self.__ini_manager.get_experiment_name()
 
+        folders = 'test_folder'
+        for a in algo_list:
+            folders += '  ' + a + '_test_folder'
+
+        server.exec_command(['tar -cvzf ' + experiment_name + '.tar.gz ' + folders], option=False)
+
+        server.close()
+
+    def download_results(self):
+        print("____________Downloading results__________\n")
+        server = SSHManager(self.__ini_manager)
+        download_folder = self.__ini_manager.get_download_folder()
+        if not download_folder.endswith("/"):
+            download_folder += "/"
+        experiment_name = self.__ini_manager.get_experiment_name();
+        discard, remote_folder = self.__ini_manager.get_remote_path()
+        if not remote_folder.endswith("/"):
+            remote_folder += "/"
+        server.get_file(download_folder + experiment_name + '.tar.gz', remote_folder + experiment_name + '.tar.gz')
 

@@ -3,7 +3,7 @@
 from __future__ import print_function
 import os
 import subprocess
-import fileUtils
+from it.polimi.server import fileUtils
 import numpy
 
 from it.polimi.utils import costManager
@@ -93,19 +93,19 @@ def launch_all(destination_path, algo_list, phi_list, ni_range, rand_seed_list):
                     launch(destination_path, alg, phiVal, ni_val, randSeed)
 
 
-def mean_time(destinationPath, algorithm, phi, ni, randSeedList):
-    fullPath = destinationPath + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
-    timeValues = []
-    for randSeed in randSeedList:
-        f = open(fullPath + '/time_' + str(randSeed) + '.txt', 'r')  # open the file
+def mean_time(destination_path, algorithm, phi, ni, randseed_list):
+    full_path = destination_path + '/results/' + algorithm + '/' + str(phi) + '/' + str(ni)
+    time_values = []
+    for randSeed in randseed_list:
+        f = open(full_path + '/time_' + str(randSeed) + '.txt', 'r')  # open the file
         line = f.readline()
         # discard the first line
         line = f.readline()
         words = line.split()
         if words[1] != 'secs':
             raise ValueError('Problems with time files')
-        timeValues.append(float(words[0]))
-    return str(numpy.mean(timeValues))
+        time_values.append(float(words[0]))
+    return str(numpy.mean(time_values))
 
 
 def mean_poa_and_iwc(index, destinationPath, algorithm, phi, ni, randSeedList):

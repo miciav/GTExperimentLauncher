@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from subprocess import check_output
 import time
 import os
@@ -7,22 +6,22 @@ from it.polimi.server import executor
 from it.polimi.utils import iniManager
 
 
-def get_pid(name):
-    """
-
-    :type name: str
-    """
+def get_pid(comm):
     try:
-        m = map(int, check_output(args).split())
+        print(comm)
+        res = check_output(comm).split()
+        m = map(int, res)
         return m
-    except:
+    except Exception as e:
+        print(e)
         print('error in getting pid')
         return map(int, [0])
 
 i_manager = iniManager.iniManager(os.getcwd())
-i_manager.readIni()
+i_manager.read_ini()
 server, p, username = i_manager.get_connection_settings()
-command = "pgrep -u "+username+" screen"
+command = ['pgrep', "-u", username, 'screen']
+
 pidMap = get_pid(command)
 
 print('The processes in execution are {0}'.format(str(len(pidMap))))
