@@ -11,12 +11,12 @@ def get_pid(comm):
     try:
         print(comm)
         res = check_output(comm).split()
-        m = map(int, res)
+        m = list(map(int, res))
         return m
     except Exception as e:
         print(e)
         print('error in getting pid')
-        return map(int, [0])
+        return list(map(int, [0]))
 
 
 i_manager = IniManager.IniManager(os.getcwd())
@@ -31,7 +31,6 @@ while len(pidMap) > 1:
     time.sleep(15)
     pidMap = get_pid(command)
     print('The processes in execution are {0}'.format(str(len(pidMap))))
-
 
 cwd, remote_path = i_manager.get_remote_path()
 

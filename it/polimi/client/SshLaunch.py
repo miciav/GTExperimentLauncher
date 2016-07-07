@@ -19,19 +19,25 @@ class ExpLauncher:
         server_name, p, username = self.__ini_manager.get_connection_settings()
         experiment_name = self.__ini_manager.get_experiment_name()
 
-        command_list = ['bash',
+        command_list = [
                         'kill $(pgrep -U ' + username + ' screen)',
-                        'cd ' + experiment_name + '/it/polimi\n export PYTHONPATH=.',
+                        'cd ' + experiment_name,
+            'export PYTHONPATH=.',
+            'cd it',
+            'export PYTHONPATH=.',
+            'cd polimi',
+            'export PYTHONPATH=.',
                         'cd ../..']
-
+        python_version = self.__ini_manager.get_remote_python_version()
         i = 0
         for a in algo_list:
-            command = 'screen -S test_{} -d -m python it/polimi/server/runner.py {} \n'.format(i, a)
+            command = 'screen -S test_{} -d -m python{} it/polimi/server/runner.py {} \n'.format(i, python_version, a)
             command_list.append(command)
             i += 1
 
-        command_list.append('screen -S checker -d -m python it/polimi/server/executionChecker.py\n'.format(i))
+        command_list.append(
+            'screen -S checker -d -m python{} it/polimi/server/executionChecker.py\n'.format(python_version))
 
-        server.exec_command(command_list, option=False)
+        server.exec_command(command_list, option=True)
         server.close()
         print("____________ Experiments running___________________\n")

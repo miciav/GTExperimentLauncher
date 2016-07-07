@@ -35,9 +35,9 @@ def select_from_menu():
 
 
 def check_conf():
-    i_manager = IniManager(os.getcwd())
+    i_manager = IniManager.IniManager(os.getcwd())
     i_manager.read_ini()
-
+    print("Ini file is well-formed")
 
 def clean_remote():
     i_manager = IniManager.IniManager(os.getcwd())

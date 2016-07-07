@@ -93,7 +93,7 @@ class SSHManager:
                 except Exception as e:
                     print(e)
 
-    def exec_command(self, command_list, wait_time=4, option=True):
+    def exec_command(self, command_list, wait_time=1, option=True):
         final_output = ''
         try:
             for c in command_list:

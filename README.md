@@ -4,10 +4,10 @@ A bunch of python scripts to launch experiments for GT paper.
 
 ### Dependencies
 
-GTExperimentLauncher has been tested with Python 2.7 and it
+GTExperimentLauncher has been tested with Python 3.5 and 2.7 and it
 requires the installation of the following external packages:
-* **paramiko** (for ssh connection)
-* **numpy** (for mathematical calculations)
+* **paramiko** (for ssh connection -required client-side-)
+* **numpy** (for mathematical calculations -required server-side-)
 
 ### Hands on
 
@@ -58,9 +58,11 @@ folder_name = GTExperimentLauncher
 experiment_name = Exp_name
 
 download_folder = /home/XXX
+
+remote_python_version = 3
 ```
 
 
 
-The first stable version has been released on 05.07.2016.
+The first stable version has been released on 06.07.2016.
 
